@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spot Detection</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>Spot detection</h1>
+  <div id="machine" class="muted"></div>
+</header>
+
+<main>
+  <section id="new-run" class="panel">
+    <h2>New run</h2>
+
+    <div class="card">
+      <h3>Input data</h3>
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" data-mode="remote">On the remote machine</button>
+        <button type="button" class="tab" data-mode="globus">From your computer (Globus)</button>
+        <button type="button" class="tab" data-mode="upload">Browser upload</button>
+      </div>
+
+      <div id="input-remote" class="tab-body">
+        <label class="field">
+          <span class="label">squid_folder</span>
+          <div class="path-row">
+            <input id="squid-folder" type="text" placeholder="/path/to/acquisition folder (or a single .ome.tiff)">
+            <button type="button" id="browse-squid">Browse…</button>
+          </div>
+          <span class="help">The acquisition folder (not its ome_tiff/ subfolder), an old-layout folder, or a single .ome.tiff. Nothing is copied.</span>
+        </label>
+      </div>
+
+      <div id="input-globus" class="tab-body hidden">
+        <div id="globus-checks" class="checks muted">Checking Globus…</div>
+        <label class="field">
+          <span class="label">Your computer's Globus endpoint</span>
+          <select id="globus-endpoint"></select>
+        </label>
+        <label class="field">
+          <span class="label">Folder or file on your computer</span>
+          <div class="path-row">
+            <input id="globus-path" type="text" placeholder="/~/path/to/acquisition folder (or a single .ome.tiff)">
+            <button type="button" id="browse-globus">Browse your computer…</button>
+          </div>
+          <span class="help">The acquisition folder (containing ome_tiff/, or 0/ for the old layout), or one .ome.tiff. Listed and transferred through Globus.</span>
+        </label>
+        <div id="globus-summary" class="summary muted">Nothing chosen yet.</div>
+        <label class="field check">
+          <input id="globus-verify" type="checkbox" checked>
+          <span><span class="label">Verify checksums</span>
+          <span class="help">Globus checks every file after transfer. Safer; costs some time per tile on both machines.</span></span>
+        </label>
+        <p class="note ok-note">Transfers are run by the remote machine, so you can close this tab once the run has started. Your computer must stay awake with Globus Connect Personal running until the last tile has arrived.</p>
+      </div>
+
+      <div id="input-upload" class="tab-body hidden">
+        <div class="path-row">
+          <button type="button" id="pick-folder">Choose squid folder…</button>
+          <button type="button" id="pick-file">Choose single .ome.tiff…</button>
+          <input id="folder-input" type="file" webkitdirectory multiple hidden>
+          <input id="file-input" type="file" accept=".tif,.tiff" hidden>
+        </div>
+        <div id="selection-summary" class="summary muted">Nothing selected. Choosing a folder uploads nothing yet; tiles are sent one at a time once the run starts.</div>
+        <label class="field">
+          <span class="label">Parallel upload streams</span>
+          <input id="parallel-uploads" type="number" min="1" max="6" value="4">
+          <span class="help">Pieces sent at once. More can help over a slow or long-distance link.</span>
+        </label>
+        <p class="note">Slower than Globus; for when Globus is not available. Keep this tab open while an upload run is going: the browser is what sends the tiles. If it closes, the run waits; reopen the page and re-select the same folder to continue.</p>
+      </div>
+
+      <label id="prefetch-field" class="field hidden">
+        <span class="label">Tiles to fetch ahead</span>
+        <input id="prefetch-tiles" type="number" min="0" max="20" value="2">
+        <span class="help">Tiles kept on the remote disk besides the one being processed. Each is deleted once read.</span>
+      </label>
+    </div>
+
+    <form id="params-form" autocomplete="off"></form>
+
+    <div class="card">
+      <h3>Run</h3>
+      <div class="grid2">
+        <label class="field">
+          <span class="label">Job name</span>
+          <input id="job-name" type="text" placeholder="defaults to the folder name">
+        </label>
+        <label class="field">
+          <span class="label">GPU</span>
+          <select id="gpu-select"></select>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" id="start" class="primary">Start run</button>
+        <button type="button" id="reset-defaults">Reset to script defaults</button>
+        <span id="start-error" class="error"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="jobs-panel" class="panel">
+    <h2>Runs</h2>
+    <div id="jobs"></div>
+    <div id="job-detail" class="card hidden">
+      <div class="detail-head">
+        <h3 id="detail-title"></h3>
+        <button type="button" id="detail-close" class="small">Close</button>
+      </div>
+      <div id="detail-info"></div>
+      <pre id="log"></pre>
+    </div>
+  </section>
+</main>
+
+<dialog id="browser">
+  <form method="dialog" class="browser">
+    <div class="detail-head">
+      <h3 id="browser-title">Choose a folder</h3>
+      <button value="cancel" class="small">Cancel</button>
+    </div>
+    <div class="path-row">
+      <button type="button" id="browser-up" class="small">Up</button>
+      <input id="browser-path" type="text">
+      <button type="button" id="browser-go" class="small">Go</button>
+    </div>
+    <ul id="browser-list"></ul>
+    <div class="actions">
+      <span id="browser-error" class="error"></span>
+      <button type="button" id="browser-choose" class="primary">Use this folder</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

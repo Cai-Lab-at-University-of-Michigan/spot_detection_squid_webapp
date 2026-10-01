@@ -1,0 +1,6 @@
+# Run data: the web app's access token (jobs/.token), job logs, uploaded
+# parameter files, staged tiles and default results. Never commit.
+jobs/
+
+__pycache__/
+*.pyc
